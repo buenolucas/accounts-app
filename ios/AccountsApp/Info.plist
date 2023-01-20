@@ -55,6 +55,10 @@
 	<array>
 		<string>Rubik-Bold.ttf</string>
 		<string>Rubik-Regular.ttf</string>
+		<string>antfill.ttf</string>
+		<string>Roboto-Bold.ttf</string>
+		<string>Roboto-Regular.ttf</string>
+		<string>antoutline.ttf</string>
 	</array>
 </dict>
 </plist>
