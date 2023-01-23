@@ -3,13 +3,14 @@ import {NavigationContainer} from '@react-navigation/native';
 
 import AppNavigation from './navigation/index';
 import {StatusBar} from 'react-native';
+import {colors} from './styles';
 
 function App() {
   return (
     <NavigationContainer>
       <StatusBar
         animated={true}
-        backgroundColor={'#622490'}
+        backgroundColor={colors.primary}
         barStyle={'light-content'}
       />
       <AppNavigation />

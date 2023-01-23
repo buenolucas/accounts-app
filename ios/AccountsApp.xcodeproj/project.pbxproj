@@ -20,6 +20,7 @@
 		7696DC2B747C420F9157D4D5 /* Roboto-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0994C22AEF91406C92F07C51 /* Roboto-Bold.ttf */; };
 		6505FFF7C4AF4D2C84B7936D /* Roboto-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 95815FCB2C8E40B9A6C722A1 /* Roboto-Regular.ttf */; };
 		2B3FABF7175D47BEB550DC3F /* antoutline.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 67C8270B1D4541F5940A450D /* antoutline.ttf */; };
+		9977F1A2979E42A991C36099 /* Rubik-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2EAF66204BFC4AE4A7AA4E14 /* Rubik-Medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 		0994C22AEF91406C92F07C51 /* Roboto-Bold.ttf */ = {isa = PBXFileReference; name = "Roboto-Bold.ttf"; path = "../assets/fonts/Roboto-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		95815FCB2C8E40B9A6C722A1 /* Roboto-Regular.ttf */ = {isa = PBXFileReference; name = "Roboto-Regular.ttf"; path = "../assets/fonts/Roboto-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		67C8270B1D4541F5940A450D /* antoutline.ttf */ = {isa = PBXFileReference; name = "antoutline.ttf"; path = "../assets/fonts/antoutline.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		2EAF66204BFC4AE4A7AA4E14 /* Rubik-Medium.ttf */ = {isa = PBXFileReference; name = "Rubik-Medium.ttf"; path = "../assets/fonts/Rubik-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,6 +172,7 @@
 				0994C22AEF91406C92F07C51 /* Roboto-Bold.ttf */,
 				95815FCB2C8E40B9A6C722A1 /* Roboto-Regular.ttf */,
 				67C8270B1D4541F5940A450D /* antoutline.ttf */,
+				2EAF66204BFC4AE4A7AA4E14 /* Rubik-Medium.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -277,6 +280,7 @@
 				7696DC2B747C420F9157D4D5 /* Roboto-Bold.ttf in Resources */,
 				6505FFF7C4AF4D2C84B7936D /* Roboto-Regular.ttf in Resources */,
 				2B3FABF7175D47BEB550DC3F /* antoutline.ttf in Resources */,
+				9977F1A2979E42A991C36099 /* Rubik-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
