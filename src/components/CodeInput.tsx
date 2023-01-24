@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
   input: {
     ...textStyle,
     marginTop: 1,
+    width: '100%',
   },
   text: {
     ...textStyle,

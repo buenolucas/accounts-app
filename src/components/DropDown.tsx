@@ -10,9 +10,11 @@ import SelectDropdown from 'react-native-select-dropdown';
 
 type DrowDownProps = {
   data: any;
-  placeholder: string;
-  defaultValue: any;
+  placeholder?: string;
+  defaultValue?: any;
   onSelect: (item: any, index?: number) => void;
+  buttonTextForSelection?: (item: any, index?: number) => void;
+  rowTextForSelection?: (selectedItem: any, index?: number) => void;
 };
 
 const DropDown: FC<DrowDownProps> = ({
@@ -20,7 +22,22 @@ const DropDown: FC<DrowDownProps> = ({
   placeholder,
   defaultValue,
   onSelect,
+  rowTextForSelection,
+  buttonTextForSelection,
 }) => {
+  /**
+   *
+   */
+  const defaultRowTextForSelection = (item: any, index: number) =>
+    rowTextForSelection ? rowTextForSelection(item, index) : item.label;
+  /**
+   *
+   */
+  const defaultButtonTextForSelection = (selectedItem: any, index: number) =>
+    buttonTextForSelection
+      ? buttonTextForSelection(selectedItem, index)
+      : selectedItem.label;
+
   return (
     <SelectDropdown
       data={data}
@@ -29,12 +46,8 @@ const DropDown: FC<DrowDownProps> = ({
       }}
       defaultValue={defaultValue}
       defaultButtonText={placeholder}
-      buttonTextAfterSelection={(selectedItem, index) => {
-        return selectedItem.label;
-      }}
-      rowTextForSelection={(item, index) => {
-        return item.label;
-      }}
+      buttonTextAfterSelection={defaultButtonTextForSelection}
+      rowTextForSelection={defaultRowTextForSelection}
       buttonStyle={styles.button}
       buttonTextStyle={styles.buttonText}
       renderDropdownIcon={isOpened => {
