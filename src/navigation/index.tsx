@@ -3,9 +3,6 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {RootStackParamList} from './types';
 import AccoutsListScreen from '../screens/accounts-list';
 import AccountsCreateScreen from '../screens/accounts-create';
-import {IconFill, IconOutline} from '@ant-design/icons-react-native';
-import {colors} from '../styles';
-import AppHeader from '../components/AppHeader';
 
 const AppStack = createNativeStackNavigator<RootStackParamList>();
 
