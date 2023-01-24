@@ -12,25 +12,24 @@ import IconButton from '../../components/IconButton';
 
 import {AccountsCreateScreenProps} from '../../navigation/types';
 import {colors} from '../../styles';
+import {
+  AccountNode,
+  AccountType,
+  OperationType,
+  useAccounts,
+} from '../../lib/accountTree';
+
 // ------------------------------------------
 // Data
 // ------------------------------------------
 
-const accountTypes = [{label: 'Receita'}, {label: 'Despesa'}];
-const acceptChilds = [{label: 'Sim'}, {label: 'Não'}];
-const parentAccount = [
-  {key: '1', label: '1 - Receitas', type: 1},
-  {key: '1_1', label: '1.1 - Taxa condominial', type: 1},
-  {key: '1_2', label: '1.2 - Reserva de dependência', type: 1},
-  {key: '1_3', label: '1.3 - Multas', type: 1},
-  {key: '1_4', label: '1.4 - Juros', type: 1},
-  {key: '1_5', label: '1.5 - Multa condominial', type: 1},
-  {key: '2', label: '2 - Despesas', type: 2},
-  {key: '2_1', label: '2.1 - Taxa condominial', type: 2},
-  {key: '2_2', label: '2.2 - Reserva de dependência', type: 2},
-  {key: '2_3', label: '2.3 - Multas', type: 2},
-  {key: '2_4', label: '2.4 - Juros', type: 2},
-  {key: '2_5', label: '2.5 - Multa condominial', type: 2},
+const accountTypes = [
+  {key: OperationType.CREDIT, label: 'Receita'},
+  {key: OperationType.DEBIT, label: 'Despesa'},
+];
+const acceptChilds = [
+  {key: AccountType.GROUP, label: 'Sim'},
+  {key: AccountType.SINGLE, label: 'Não'},
 ];
 
 // ------------------------------------------
@@ -58,29 +57,80 @@ const AccountsCreateScreen: FC<AccountsCreateScreenProps> = ({navigation}) => {
           rightActions={() => (
             <IconButton
               onPress={() => {
-                navigation.navigate('account_create');
+                console.log('@@@@', accountName);
+                const payload = {
+                  name: accountName,
+                  operation: operationType,
+                  code: Number(code),
+                  type: accountType,
+                  parentKey: parentGroup?.key,
+                };
+
+                try {
+                  insert(payload);
+                } catch (err: any) {
+                  console.log(err);
+                }
               }}>
               <IconOutline name="check" size={22} color={colors.white} />
             </IconButton>
           )}
         />
       ),
-      headerRight: () => (
-        <IconOutline
-          name="check"
-          size={22}
-          color={colors.white}
-          onPress={() => navigation.navigate('account_create')}
-        />
-      ),
     });
   }, [navigation]);
 
-  const onSelect = (obj: any, index?: number) => {
-    console.log(obj, index);
+  const [operationType, setOperationType] = useState(OperationType.CREDIT);
+  const [code, setCode] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [accountType, setAccountType] = useState(AccountType.GROUP);
+  const [parentGroup, setParentGroup] = useState<AccountNode>();
+  const [parentGroupCode, setParentGroupCode] = useState<string>('');
+
+  const {accounts, insert} = useAccounts();
+
+  const [parentAccounts, setParentAccounts] = useState<AccountNode[]>([]);
+
+  useEffect(() => {
+    let result = accounts.filter(item => item.operation === operationType);
+
+    result = [
+      {
+        key: 'root',
+        name: 'Sem pai',
+        type: AccountType.GROUP,
+        operation: OperationType.CREDIT,
+        path: [],
+        code: 1,
+        childNodes: [],
+      },
+      ...result,
+    ];
+
+    setParentAccounts(result);
+  }, [operationType]);
+
+  const onSelect = (obj: AccountNode, index?: number) => {
+    if (obj) {
+      const node: AccountNode = obj as AccountNode;
+    }
+    const g = obj.key !== 'root' ? [...obj.path, obj.code].join('.') + '.' : '';
+    setParentGroupCode(g);
+    setParentGroup(obj);
+    const collection = obj.key === 'root' ? accounts : obj.childNodes;
+    let nextCode = 1;
+    if (collection.length > 0) {
+      nextCode = collection[collection.length - 1].code;
+    }
+    // const nextCode = '' + obj.childNodes[obj.childNodes.length - 1].code;
+    setCode('' + nextCode);
   };
-  const [cod, setCod] = useState<string>('');
-  const [name, setName] = useState<string>('');
+  const onSelectAccountType = (obj: any, index?: number) => {
+    setAccountType(obj.key);
+  };
+  const onOperationTypeSelect = (obj: any, index?: number) => {
+    setOperationType(obj.key);
+  };
 
   return (
     <Screen>
@@ -91,33 +141,45 @@ const AccountsCreateScreen: FC<AccountsCreateScreenProps> = ({navigation}) => {
             data={accountTypes}
             placeholder={'Tipo'}
             defaultValue={accountTypes[0]}
-            onSelect={onSelect}
+            onSelect={onOperationTypeSelect}
           />
         </FormItem>
         {/* Conta Pai */}
         <FormItem label="Conta Pai">
           <DropDown
-            data={parentAccount}
-            placeholder={'contaPai'}
-            defaultValue={parentAccount[0]}
+            data={parentAccounts}
+            defaultValue={parentAccounts[0]}
+            buttonTextForSelection={(item: AccountNode) =>
+              item.key !== 'root'
+                ? [...item.path, item.code] + ' - ' + item.name
+                : item.name
+            }
+            rowTextForSelection={(item: AccountNode) =>
+              item.key !== 'root'
+                ? [...item.path, item.code] + ' - ' + item.name
+                : item.name
+            }
             onSelect={onSelect}
           />
         </FormItem>
         {/* Conta Pai */}
         <FormItem label="Código">
-          <CodeInput group="1.11." value={cod} onChangeText={setCod} />
+          <CodeInput
+            group={parentGroupCode}
+            value={code}
+            onChangeText={setCode}
+          />
         </FormItem>
         {/* Conta Pai */}
         <FormItem label="Nome">
-          <TextInput value={name} onChangeText={setName} />
+          <TextInput value={accountName} onChangeText={setAccountName} />
         </FormItem>
         {/* Lan~camentos */}
         <FormItem label="Aceita Lançamentos">
           <DropDown
             data={acceptChilds}
-            placeholder={'Aceita'}
             defaultValue={acceptChilds[0]}
-            onSelect={onSelect}
+            onSelect={onSelectAccountType}
           />
         </FormItem>
       </ScrollView>
