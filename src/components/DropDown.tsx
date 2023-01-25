@@ -9,6 +9,7 @@ import SelectDropdown from 'react-native-select-dropdown';
 // ------------------------------------------
 
 type DrowDownProps = {
+  mainRef?: any;
   data: any;
   placeholder?: string;
   defaultValue?: any;
@@ -22,6 +23,7 @@ const DropDown: FC<DrowDownProps> = ({
   placeholder,
   defaultValue,
   onSelect,
+  mainRef,
   rowTextForSelection,
   buttonTextForSelection,
 }) => {
@@ -40,6 +42,7 @@ const DropDown: FC<DrowDownProps> = ({
 
   return (
     <SelectDropdown
+      ref={mainRef}
       data={data}
       onSelect={(selectedItem, index) => {
         onSelect(selectedItem, index);

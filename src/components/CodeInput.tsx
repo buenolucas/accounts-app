@@ -6,14 +6,14 @@ import {View, StyleSheet, Text, TextInput as RNTextInput} from 'react-native';
 // ------------------------------------------
 export type CodeInputProps = {
   value: string;
-  group?: string;
+  path: number[];
   onChangeText: (value: string) => void;
 };
 
-const CodeInput: FC<CodeInputProps> = ({value, group = '', onChangeText}) => {
+const CodeInput: FC<CodeInputProps> = ({value, path = [], onChangeText}) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>{group}</Text>
+      <Text style={styles.text}>{path.length > 0 && path.join('.') + '.'}</Text>
       <RNTextInput
         keyboardType="numeric"
         style={styles.input}

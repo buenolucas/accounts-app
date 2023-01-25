@@ -13,6 +13,7 @@ import SearchInput from './SearchInput';
 
 type AppHeaderProps = {
   title: string;
+  onQuery?: (value: string) => void;
   backButtonVisible?: boolean;
   searchBarVisible?: boolean;
   rightActions?: () => ReactNode;
@@ -22,10 +23,18 @@ const AppHeader: FC<AppHeaderProps> = ({
   searchBarVisible = false,
   backButtonVisible = false,
   rightActions,
+  onQuery,
 }) => {
   const navigation = useNavigation();
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState<string>();
+
+  const onChangeText = (value: string) => {
+    setSearch(value);
+    if (onQuery) {
+      onQuery(value);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -45,7 +54,7 @@ const AppHeader: FC<AppHeaderProps> = ({
       </View>
       {searchBarVisible && (
         <View style={styles.search}>
-          <SearchInput onChangeText={setSearch} value={search} />
+          <SearchInput onChangeText={onChangeText} value={search} />
         </View>
       )}
     </View>
