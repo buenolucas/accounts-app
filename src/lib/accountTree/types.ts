@@ -2,6 +2,7 @@ export enum AccountType {
   GROUP = 'group',
   SINGLE = 'single',
 }
+
 export enum OperationType {
   DEBIT = -1,
   CREDIT = 1,
