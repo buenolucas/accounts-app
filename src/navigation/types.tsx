@@ -1,8 +1,10 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 export type RootStackParamList = {
-  accounts: undefined; //{userId: string};
-  account_create: undefined; //{userId: string};
+  accounts: undefined;
+  account_create: undefined;
+  account_view: {accountId: string};
+  account_test: undefined;
 };
 
 export type AccountsListScreenProps = NativeStackScreenProps<
@@ -13,4 +15,9 @@ export type AccountsListScreenProps = NativeStackScreenProps<
 export type AccountsCreateScreenProps = NativeStackScreenProps<
   RootStackParamList,
   'account_create'
+>;
+
+export type AccountViewScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  'account_view'
 >;

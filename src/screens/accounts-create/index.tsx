@@ -1,17 +1,20 @@
-import React, {FC, useState, useEffect} from 'react';
-import {ScrollView, StyleSheet} from 'react-native';
-import {IconOutline} from '@ant-design/icons-react-native';
+import React, {FC, useState, useEffect, useMemo, useRef} from 'react';
+import {
+  Button,
+  ScrollView,
+  StyleSheet,
+  TextInput as RNTextInput,
+  View,
+} from 'react-native';
 
 import Screen from '../../components/Screen';
 import DropDown from '../../components/DropDown';
 import FormItem from '../../components/FormItem';
 import TextInput from '../../components/TextInput';
-import CodeInput from '../../components/CodeInput';
 import AppHeader from '../../components/AppHeader';
-import IconButton from '../../components/IconButton';
 
 import {AccountsCreateScreenProps} from '../../navigation/types';
-import {colors} from '../../styles';
+
 import {
   AccountNode,
   AccountType,
@@ -19,17 +22,20 @@ import {
   useAccounts,
 } from '../../lib/accountTree';
 
+import CodeInput from '../../components/CodeInput';
+import {colors} from '../../styles';
+
 // ------------------------------------------
 // Data
 // ------------------------------------------
 
-const accountTypes = [
+const operations = [
   {key: OperationType.CREDIT, label: 'Receita'},
   {key: OperationType.DEBIT, label: 'Despesa'},
 ];
-const acceptChilds = [
-  {key: AccountType.GROUP, label: 'Sim'},
-  {key: AccountType.SINGLE, label: 'Não'},
+const types = [
+  {key: AccountType.SINGLE, label: 'Sim'},
+  {key: AccountType.GROUP, label: 'Não'},
 ];
 
 // ------------------------------------------
@@ -47,144 +53,179 @@ const styles = StyleSheet.create({
 // AccountsCreateScreen
 // ------------------------------------------
 
-const AccountsCreateScreen: FC<AccountsCreateScreenProps> = ({navigation}) => {
+const AccountCreateScreen: FC<AccountsCreateScreenProps> = ({navigation}) => {
   useEffect(() => {
     navigation.setOptions({
       header: props => (
         <AppHeader
-          title="Inserir Conta"
+          title="Teste"
           backButtonVisible={true}
+          onQuery={setQuery}
           rightActions={() => (
-            <IconButton
-              onPress={() => {
-                console.log('@@@@', accountName);
-                const payload = {
-                  name: accountName,
-                  operation: operationType,
-                  code: Number(code),
-                  type: accountType,
-                  parentKey: parentGroup?.key,
-                };
-
-                try {
-                  insert(payload);
-                } catch (err: any) {
-                  console.log(err);
-                }
-              }}>
-              <IconOutline name="check" size={22} color={colors.white} />
-            </IconButton>
+            <>
+              {/* <IconButton
+                onPress={() => {
+                  saveForm();
+                }}>
+                <IconOutline name="check" size={22} color={colors.white} />
+              </IconButton> */}
+            </>
           )}
         />
       ),
     });
   }, [navigation]);
 
-  const [operationType, setOperationType] = useState(OperationType.CREDIT);
-  const [code, setCode] = useState('');
-  const [accountName, setAccountName] = useState('');
-  const [accountType, setAccountType] = useState(AccountType.GROUP);
-  const [parentGroup, setParentGroup] = useState<AccountNode>();
-  const [parentGroupCode, setParentGroupCode] = useState<string>('');
+  const accountsRef = useRef<any>(null);
+  const [parent, setParent] = useState<any>({key: '', label: 'Nenhum'});
 
-  const {accounts, insert} = useAccounts();
+  const [name, setName] = useState<string>('');
+  const [code, setCode] = useState<string>('');
+  const [path, setPàth] = useState<number[]>();
 
-  const [parentAccounts, setParentAccounts] = useState<AccountNode[]>([]);
+  const [query, setQuery] = useState<string>('');
+  const [operation, setOperation] = useState<OperationType>(
+    OperationType.CREDIT,
+  );
+  const [type, setType] = useState<AccountType>(AccountType.SINGLE);
+
+  const {accounts, insert, getNextSlot} = useAccounts();
+
+  const accountsList = useMemo(() => {
+    const accs: ReturnType<typeof create>[] = [];
+    accs.push({
+      key: '',
+      label: 'Nenhum',
+      operation: 1,
+      type: AccountType.GROUP,
+      path: [],
+    });
+
+    const create = (node: AccountNode) => {
+      return {
+        key: node.key,
+        label: [...node.path, node.code].join('.') + ' - ' + node.name,
+        operation: node.operation,
+        type: node.type,
+        path: [...node.path, node.code],
+      };
+    };
+
+    const visit = (node: AccountNode) => {
+      const n = create(node);
+      const _operation = operation || 1;
+      if (n.type === AccountType.SINGLE || n.operation !== _operation) return;
+      accs.push(n);
+      for (const child of node.childNodes) {
+        visit(child);
+      }
+    };
+
+    for (const child of accounts) {
+      visit(child);
+    }
+
+    return accs;
+  }, [accounts, operation]);
 
   useEffect(() => {
-    let result = accounts.filter(item => item.operation === operationType);
+    onChangeParentAccount();
+  }, [parent]);
 
-    result = [
-      {
-        key: 'root',
-        name: 'Sem pai',
-        type: AccountType.GROUP,
-        operation: OperationType.CREDIT,
-        path: [],
-        code: 1,
-        childNodes: [],
-      },
-      ...result,
-    ];
+  useEffect(() => {}, []);
 
-    setParentAccounts(result);
-  }, [operationType]);
+  const onChangeParentAccount = () => {
+    setOperation(parent.operation);
+    const nextCode = getNextSlot(parent.key);
+    const code = nextCode.pop();
 
-  const onSelect = (obj: AccountNode, index?: number) => {
-    if (obj) {
-      const node: AccountNode = obj as AccountNode;
+    for (let i = 0; i < accountsList.length; i++) {
+      const node = accountsList[i];
+      if (node.path.join('-') == nextCode.join('-')) {
+        accountsRef.current.selectIndex(i);
+      }
     }
-    const g = obj.key !== 'root' ? [...obj.path, obj.code].join('.') + '.' : '';
-    setParentGroupCode(g);
-    setParentGroup(obj);
-    const collection = obj.key === 'root' ? accounts : obj.childNodes;
-    let nextCode = 1;
-    if (collection.length > 0) {
-      nextCode = collection[collection.length - 1].code;
+    setCode('' + code);
+    //
+  };
+
+  //----------------------------------
+  // EVENT HANDLERS
+  //----------------------------------
+  const onSelectParentAccount = (item: any) => {
+    setParent(item);
+  };
+
+  const onSelectAccountType = (item: any) => {
+    setType(item.key);
+  };
+  const onSelectOperation = (item: any) => {
+    setOperation(item.key);
+  };
+
+  //----------------------------------
+  // EVENT HANDLERS
+  //----------------------------------
+
+  const saveForm = () => {
+    const payload = {
+      name: name,
+      code: Number(code),
+      type,
+      operation,
+      parentKey: parent.key || undefined,
+    };
+
+    try {
+      insert(payload);
+      navigation.navigate('accounts');
+    } catch (err: any) {
+      console.log(err);
     }
-    // const nextCode = '' + obj.childNodes[obj.childNodes.length - 1].code;
-    setCode('' + nextCode);
-  };
-  const onSelectAccountType = (obj: any, index?: number) => {
-    setAccountType(obj.key);
-  };
-  const onOperationTypeSelect = (obj: any, index?: number) => {
-    setOperationType(obj.key);
   };
 
   return (
     <Screen>
       <ScrollView>
-        {/* Tipo */}
         <FormItem label="Tipo">
           <DropDown
-            data={accountTypes}
-            placeholder={'Tipo'}
-            defaultValue={accountTypes[0]}
-            onSelect={onOperationTypeSelect}
+            data={operations}
+            defaultValue={operations[0]}
+            onSelect={onSelectOperation}
           />
         </FormItem>
-        {/* Conta Pai */}
         <FormItem label="Conta Pai">
           <DropDown
-            data={parentAccounts}
-            defaultValue={parentAccounts[0]}
-            buttonTextForSelection={(item: AccountNode) =>
-              item.key !== 'root'
-                ? [...item.path, item.code] + ' - ' + item.name
-                : item.name
-            }
-            rowTextForSelection={(item: AccountNode) =>
-              item.key !== 'root'
-                ? [...item.path, item.code] + ' - ' + item.name
-                : item.name
-            }
-            onSelect={onSelect}
+            mainRef={accountsRef}
+            data={accountsList}
+            onSelect={onSelectParentAccount}
+            defaultValue={accountsList[0]}
           />
         </FormItem>
-        {/* Conta Pai */}
         <FormItem label="Código">
-          <CodeInput
-            group={parentGroupCode}
-            value={code}
-            onChangeText={setCode}
-          />
+          <CodeInput path={parent.path} value={code} onChangeText={setCode} />
         </FormItem>
-        {/* Conta Pai */}
         <FormItem label="Nome">
-          <TextInput value={accountName} onChangeText={setAccountName} />
+          <TextInput value={name} onChangeText={setName} />
         </FormItem>
-        {/* Lan~camentos */}
         <FormItem label="Aceita Lançamentos">
           <DropDown
-            data={acceptChilds}
-            defaultValue={acceptChilds[0]}
+            data={types}
+            defaultValue={types[0]}
             onSelect={onSelectAccountType}
           />
         </FormItem>
+
+        <View style={{marginTop: 18}}>
+          <Button
+            title="save"
+            onPress={() => saveForm()}
+            color={colors.primary}
+          />
+        </View>
       </ScrollView>
     </Screen>
   );
 };
 
-export default React.memo(AccountsCreateScreen);
+export default AccountCreateScreen;

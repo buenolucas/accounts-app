@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {View, Text, FlatList, StyleSheet, Button} from 'react-native';
 import {IconOutline} from '@ant-design/icons-react-native';
 import {AccountsListScreenProps} from '../../navigation/types';
@@ -7,12 +7,7 @@ import IconButton from '../../components/IconButton';
 import AppHeader from '../../components/AppHeader';
 import {colors} from '../../styles';
 
-import {
-  useAccounts,
-  AccountNode,
-  AccountType,
-  OperationType,
-} from '../../lib/accountTree';
+import {useAccounts, AccountNode} from '../../lib/accountTree';
 import {DeleteAccountModal} from './DeleteAccountModal';
 import ListHeader from './ListHeader';
 
@@ -23,6 +18,7 @@ function AccountsListScreen({navigation}: AccountsListScreenProps) {
         <AppHeader
           title="Plano de Contas"
           searchBarVisible={true}
+          onQuery={setQueryQ}
           rightActions={() => (
             <IconButton
               onPress={() => {
@@ -36,9 +32,39 @@ function AccountsListScreen({navigation}: AccountsListScreenProps) {
     });
   }, [navigation]);
 
+  const setQueryQ = (value: string) => {
+    setQuery(value);
+  };
+
+  const [query, setQuery] = useState<string>('');
+
   const [selectedAccount, setSelectedAccount] = useState<AccountNode>();
 
-  const {insert, accounts} = useAccounts();
+  const {insert, accounts, remove} = useAccounts();
+
+  const filtredAccounts = useMemo(() => {
+    const filtred: AccountNode[] = [];
+    const visit = (node: AccountNode) => {
+      if (query && node.name!.toLowerCase().indexOf(query.toLowerCase()) < 0) {
+        return;
+      }
+      filtred.push(node);
+      for (const child of node.childNodes) {
+        visit(child);
+      }
+    };
+    for (const child of accounts) {
+      visit(child);
+    }
+    return filtred;
+  }, [accounts, query]);
+
+  const onDeleteHandler = () => {
+    if (selectedAccount) {
+      remove(selectedAccount.key);
+      setSelectedAccount(undefined);
+    }
+  };
   const renderList = (accs: AccountNode[]) => {
     return (
       <FlatList
@@ -53,56 +79,56 @@ function AccountsListScreen({navigation}: AccountsListScreenProps) {
                     styles.itemTitle,
                     item.operation === 1 ? styles.positive : styles.negative,
                   ]}>
-                  {[...item.path, item.code].join('.')}-{item.name}
+                  {[...item.path, item.code].join('.')} - {item.name}
                 </Text>
-                <IconButton onPress={() => {}}>
-                  <IconOutline
-                    name="delete"
-                    size={18}
-                    color={'#C4C4D1'}
-                    onPress={() => setSelectedAccount(item)}
-                  />
-                </IconButton>
+                <View style={{gap: 1, flexDirection: 'row'}}>
+                  <IconButton onPress={() => {}}>
+                    <IconOutline
+                      name="edit"
+                      size={18}
+                      color={'#C4C4D1'}
+                      onPress={() =>
+                        navigation.navigate('account_view', {
+                          accountId: item.key,
+                        })
+                      }
+                    />
+                  </IconButton>
+                  <IconButton onPress={() => {}}>
+                    <IconOutline
+                      name="delete"
+                      size={18}
+                      color={'#C4C4D1'}
+                      onPress={() => setSelectedAccount(item)}
+                    />
+                  </IconButton>
+                </View>
               </View>
-              {item.childNodes && renderList(item.childNodes)}
             </View>
           );
         }}
       />
     );
   };
-
   return (
     <Screen>
       <View style={styles.container}>
-        {accounts.length > 0 && (
+        {filtredAccounts.length > 0 ? (
           <>
-            <ListHeader total={10} />
-            {renderList(accounts)}
+            <ListHeader total={filtredAccounts.length} />
+            {renderList(filtredAccounts)}
           </>
-        )}
-        {accounts.length === 0 && (
+        ) : (
           <View>
-            <Text>Importar</Text>
-            <Button
-              title="Importar"
-              onPress={() => {
-                insert({
-                  // key: 'r01',
-                  name: 'Receita',
-                  type: AccountType.GROUP,
-                  operation: OperationType.CREDIT,
-                });
-                insert({
-                  name: 'Despesa',
-                  type: AccountType.GROUP,
-                  operation: OperationType.DEBIT,
-                });
-              }}
-            />
+            <Text>Nenhum registro encontrado.</Text>
           </View>
         )}
       </View>
+      <DeleteAccountModal
+        account={selectedAccount}
+        onRequestClose={() => setSelectedAccount(undefined)}
+        onRequestDelete={() => onDeleteHandler()}
+      />
     </Screen>
   );
 }

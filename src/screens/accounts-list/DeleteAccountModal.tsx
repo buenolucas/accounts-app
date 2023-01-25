@@ -1,3 +1,4 @@
+import {IconOutline} from '@ant-design/icons-react-native';
 import React, {FC, useEffect, useState} from 'react';
 import {
   View,
@@ -7,9 +8,11 @@ import {
   TextInput as RNBaseModal,
   Modal,
   Button,
+  Pressable,
 } from 'react-native';
 import BaseModal from '../../components/BaseModal';
 import {AccountNode} from '../../lib/accountTree';
+import {colors} from '../../styles';
 
 // ------------------------------------------
 // BaseModal
@@ -31,15 +34,27 @@ export const DeleteAccountModal: FC<DeleteAccountModalProps> = props => {
   }, [account]);
 
   const accountName = () =>
-    account && [...account.path, account.code].join('.');
+    account && [...account.path, account.code].join('.') + ' - ' + account.name;
   return (
     <BaseModal visible={visible} onRequestClose={onRequestClose}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Text>Deseja excluir:</Text>
-          <Text>{accountName()}</Text>
-          <Button title="Não" onPress={() => onRequestClose()} />
-          <Button title="Sim" onPress={() => onRequestDelete()} />
+          <IconOutline name="delete" size={48} color={colors.danger} />
+          <Text style={styles.modalText}>Deseja excluir:</Text>
+          <Text style={styles.modalText}>{accountName()}</Text>
+
+          <View style={styles.actionBar}>
+            <Button
+              title="Não!"
+              onPress={() => onRequestClose()}
+              color={colors.danger}
+            />
+            <Button
+              color={colors.danger}
+              title="Com Certeza"
+              onPress={() => onRequestDelete()}
+            />
+          </View>
         </View>
       </View>
     </BaseModal>
@@ -71,6 +86,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  actionBar: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 1,
   },
   button: {
     borderRadius: 20,
